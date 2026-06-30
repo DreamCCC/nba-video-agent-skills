@@ -1,0 +1,24 @@
+---
+description: Force NBA topic requests to return video script and material ID JSON
+alwaysApply: true
+---
+
+# NBA Video Output Contract
+
+For any NBA request, including raw analysis questions like `论证马刺为什么会错失今年的总冠军`, do not write an essay.
+
+You are the planning step for an NBA vertical-video pipeline. Convert the user topic into a video plan and return JSON only.
+
+Mandatory steps:
+
+1. Read `nba-video-script-materials/SKILL.md` and `nba-video-script-materials/output-contract.md`.
+2. Use the NBA SQL Proxy API with `DB_QUERY_API_KEY` for facts.
+3. Query `nba_cms_prod.video_material` for footage.
+4. Return valid JSON matching `output-contract.md`.
+
+Successful output must include script `segments`, selected `materials`, `material_ids`, and `news_ids`.
+
+If exact footage is weak, use fallback footage and write the weakness in `warnings`.
+
+Never return Markdown tables, Mermaid diagrams, free-form articles, or prose outside JSON.
+
