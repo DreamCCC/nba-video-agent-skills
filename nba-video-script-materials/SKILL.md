@@ -9,6 +9,10 @@ description: Generates NBA short-video scripts with matching video material IDs/
 
 Given a natural-language NBA video topic, produce a structured script and a segment-by-segment material allocation. The output is a plan only: do not synthesize voice, download videos, run FFmpeg, or create the final video.
 
+Treat any NBA analysis, argument, "why/how" question, championship discussion, player/team topic, game recap, playoff topic, or highlight topic as an NBA short-video planning task unless the user explicitly says they do not want a video plan.
+
+Do not answer as a free-form article. Return valid JSON only, following `output-contract.md`.
+
 The final answer must include:
 
 - A complete Chinese commentary script split into segments.
@@ -32,6 +36,8 @@ Read these files before doing the task:
 1. Parse the user topic.
    - Identify target teams, players, season, game, date, narrative angle, desired duration, and required visual themes.
    - If the topic implies a specific game or series, first resolve the real `GAME_ID`/`game_id`.
+   - If the user only asks a raw question such as `论证马刺为什么会错失今年的总冠军`, convert it into a 90-180 second vertical-video planning request.
+   - Resolve ambiguous terms such as `今年` from database context and document the assumption.
 
 2. Query factual NBA data.
    - Use the SQL proxy API only.
@@ -59,6 +65,7 @@ Read these files before doing the task:
    - Use the JSON contract in `output-contract.md`.
    - Include SQL summaries and query hashes if available.
    - Do not include secrets or Bearer tokens.
+   - Do not include Markdown tables, Mermaid diagrams, essay prose, or explanations outside the JSON object.
 
 ## Hard Rules
 
@@ -67,4 +74,5 @@ Read these files before doing the task:
 - Do not use nonexistent convenience tables like `player_game_stats` or `nba_player_game_stats`.
 - Do not treat `video_file` as reliably playable. Use `news_id` for playback systems.
 - Do not return an empty script. If data is insufficient, return `success=false` with `blocking_reason`.
+- Do not skip material matching. Every successful segment must include `material_ids` and `news_ids`; weak matches belong in `warnings`.
 
