@@ -18,6 +18,17 @@ Run this checklist before returning the final JSON.
 - `segments[].news_ids` are copied from `video_material.news_id`.
 - `video_file` is not treated as the final playback source.
 - Long/full-game materials are not used unless the user explicitly requested them.
+- Each segment normally has 2-4 selected materials.
+- One-material segments are allowed only when that one clip covers the segment duration and is an exact match.
+
+## Duration Coverage
+
+- For each segment, `sum(selected material duration_s) >= estimated_duration_s`.
+- Target coverage for each segment is at least `estimated_duration_s * 1.15`.
+- Total selected material duration must be at least `target_duration_s`; target total coverage is `target_duration_s * 1.15`.
+- If exact clips are too short, add fallback clips from same game, same series, same team/player, same action type, or context B-roll.
+- If any segment coverage is below `1.0`, do not return `success=true`; add more fallback materials or shorten the segment script.
+- Record `material_duration_s` and `duration_coverage_ratio` for every segment.
 
 ## Relevance
 
@@ -38,6 +49,7 @@ Run this checklist before returning the final JSON.
 
 - Return valid JSON.
 - `success` is true only if the script and material allocation are complete.
+- `success` is true only if duration coverage is complete.
 - Include `queries` with table names and proxy `query_hash` values when available.
 - Do not include Bearer tokens, environment variable values, raw secrets, or full authentication headers.
 

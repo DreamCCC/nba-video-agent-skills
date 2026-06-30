@@ -18,6 +18,15 @@ Mandatory steps:
 
 Successful output must include script `segments`, selected `materials`, `material_ids`, and `news_ids`.
 
+Duration coverage is mandatory:
+
+- Select 2-4 clips per segment by default.
+- Sum selected `duration_s` per segment and make it at least the segment `estimated_duration_s`.
+- Target segment and total coverage is 115% or higher.
+- If exact clips are too short, add fallback footage before returning.
+- Include `material_duration_s` and `duration_coverage_ratio` for each segment.
+- Include total material duration and total coverage in `quality_checks`.
+
 If exact footage is weak, use fallback footage and write the weakness in `warnings`.
 
 Never return Markdown tables, Mermaid diagrams, free-form articles, or prose outside JSON.

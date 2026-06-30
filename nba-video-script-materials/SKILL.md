@@ -19,6 +19,7 @@ The final answer must include:
 - Matching `video_material.id` and `news_id` for each segment.
 - Evidence SQL/data used to support the script.
 - Material selection rationale.
+- A duration coverage plan: selected clip duration must cover the requested/estimated narration duration.
 
 ## Required References
 
@@ -57,7 +58,10 @@ Read these files before doing the task:
    - For playable downstream usage, return `news_id`; do not depend on `video_file` direct URLs.
 
 5. Allocate clips.
-   - Every segment should have at least 1-3 relevant materials.
+   - Every segment should have at least 2-4 relevant materials by default. Use 1 clip only when that clip alone covers the segment duration and is clearly exact.
+   - For each segment, sum selected `materials[].duration_s` and make it at least `segments[].estimated_duration_s * 1.15`.
+   - For the whole video, sum all selected material durations and make it at least `target_duration_s * 1.15`.
+   - If exact footage is too short, add relevant fallback clips from the same game, same team/player, same action type, or adjacent storyline until duration coverage is enough.
    - Prefer clips with exact player/team/action matches, higher `star`, shorter duration, and matching `game_id`.
    - If there are not enough exact materials, use broader context clips and explain the fallback.
 
@@ -75,4 +79,5 @@ Read these files before doing the task:
 - Do not treat `video_file` as reliably playable. Use `news_id` for playback systems.
 - Do not return an empty script. If data is insufficient, return `success=false` with `blocking_reason`.
 - Do not skip material matching. Every successful segment must include `material_ids` and `news_ids`; weak matches belong in `warnings`.
+- Do not return `success=true` if selected material duration covers less than 100% of the target narration duration. Add fallback materials first.
 

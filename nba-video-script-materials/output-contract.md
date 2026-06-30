@@ -27,7 +27,9 @@ Return one JSON object. Do not wrap it in markdown fences unless the caller expl
         }
       ],
       "material_ids": [123456],
-      "news_ids": ["987654321"]
+      "news_ids": ["987654321"],
+      "material_duration_s": 24.6,
+      "duration_coverage_ratio": 1.37
     }
   ],
   "materials": [
@@ -68,7 +70,11 @@ Return one JSON object. Do not wrap it in markdown fences unless the caller expl
     "all_stats_have_sources": true,
     "all_segments_have_materials": true,
     "all_materials_have_news_id": true,
-    "no_fabricated_ids": true
+    "no_fabricated_ids": true,
+    "all_segments_have_duration_coverage": true,
+    "total_material_duration_s": 180.5,
+    "total_target_duration_s": 150,
+    "total_duration_coverage_ratio": 1.2
   }
 }
 ```
@@ -94,10 +100,13 @@ Use this when the task cannot be completed with available data.
 - `segments[].voiceover` must be ready for TTS and should not contain stage directions.
 - `segments[].material_ids` must be `video_material.id` values returned by SQL.
 - `segments[].news_ids` must be copied from the selected materials. Do not use `id` as `news_id`.
+- `segments[].material_duration_s` is the sum of `duration_s` for selected materials in that segment.
+- `segments[].duration_coverage_ratio` is `material_duration_s / estimated_duration_s`.
 - `materials[].id` and `materials[].news_id` are both required for playable clips.
 - `materials[].pbp` is optional, but include it when `event` maps to `kb_pbp.action_number`.
 - `queries[].query_hash` should come from the SQL proxy response when available.
-- `warnings` should include broad fallback matches, missing PBP mappings, or weak evidence.
+- `warnings` should include broad fallback matches, missing PBP mappings, weak evidence, or duration coverage below 115%.
+- Successful outputs should target `duration_coverage_ratio >= 1.15` for every segment and total coverage. Absolute minimum is `1.0`; below `1.0` is not acceptable for `success=true`.
 
 ## Script Guidelines
 
