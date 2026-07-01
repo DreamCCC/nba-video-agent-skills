@@ -24,6 +24,7 @@ Read these repository files before answering:
 - `nba-video-script-materials/db-query-api.md`
 - `nba-video-script-materials/database-schema.md`
 - `nba-video-script-materials/sql-recipes.md`
+- `nba-video-script-materials/fact-checking.md`
 - `nba-video-script-materials/output-contract.md`
 - `nba-video-script-materials/quality-checklist.md`
 
@@ -53,15 +54,16 @@ Do not return Markdown tables, Mermaid diagrams, or an essay outside JSON.
 
 1. Interpret the raw user prompt as an NBA short-video topic.
 2. Resolve ambiguous time words such as "今年" using database context.
-3. Query factual tables through the NBA SQL Proxy API.
-4. Build a 90-180 second Chinese vertical-video narrative with 4-7 segments.
-5. Query `nba_cms_prod.video_material` and select footage for every segment.
-6. Select 2-4 clips per segment by default. Use 1 clip only if it alone covers that segment's `estimated_duration_s`.
-7. Calculate selected material duration for every segment. Segment coverage must be at least 100%, target 115%.
-8. Calculate total material duration. Total coverage must be at least 100%, target 115%.
-9. Prefer clips with non-empty `news_id`, exact `game_id`, exact player/team/action matches, higher `item_info.star`, and shorter duration.
-10. If exact clips are unavailable or too short, add fallback clips and explain in `warnings`.
-11. Return the JSON contract only.
+3. For trades, signings, injuries, jersey changes, roster moves, draft/free-agency news, or any claim not covered by the database, run WebSearch first and use `fact-checking.md`.
+4. Query factual tables through the NBA SQL Proxy API.
+5. Build a 90-180 second Chinese vertical-video narrative with 4-7 segments.
+6. Query `nba_cms_prod.video_material` and select footage for every segment.
+7. Select 2-4 clips per segment by default. Use 1 clip only if it alone covers that segment's `estimated_duration_s`.
+8. Calculate selected material duration for every segment. Segment coverage must be at least 100%, target 115%.
+9. Calculate total material duration. Total coverage must be at least 100%, target 115%.
+10. Prefer clips with non-empty `news_id`, exact `game_id`, exact player/team/action matches, higher `item_info.star`, and shorter duration.
+11. If exact clips are unavailable or too short, add fallback clips and explain in `warnings`.
+12. Return the JSON contract only.
 
 ## Hard Rules
 
@@ -69,6 +71,8 @@ Do not return Markdown tables, Mermaid diagrams, or an essay outside JSON.
 - Never use nonexistent tables like `player_game_stats` or `nba_player_game_stats`.
 - Never treat `video_file` as the final playable URL. Downstream playback uses `news_id`.
 - Never return `success=true` if selected material duration is shorter than narration duration.
+- Never use trade, signing, injury, jersey-change, or roster-move claims without WebSearch verification.
+- Never select player-specific footage from surname-only matching; resolve the exact full-name/player-ID identity first.
 - Never reveal or save `DB_QUERY_API_KEY`.
 - Never modify repo files, commit, push, create branches, or open PRs.
 

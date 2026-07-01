@@ -24,6 +24,11 @@ Return one JSON object. Do not wrap it in markdown fences unless the caller expl
           "type": "stat",
           "text": "真实数据依据",
           "source": "nba_game_prod.kb_pbs"
+        },
+        {
+          "type": "web_verification",
+          "text": "交易、签约、伤病、阵容或球衣变化等非数据库事实的核验结论",
+          "source": "WebSearch"
         }
       ],
       "material_ids": [123456],
@@ -61,6 +66,20 @@ Return one JSON object. Do not wrap it in markdown fences unless the caller expl
       "tables": ["nba_game_prod.kb_pbs"],
       "query_hash": "90ca954a9febd2d8",
       "row_count": 12,
+      "truncated": false
+    },
+    {
+      "purpose": "WebSearch 核验交易/签约/伤病/阵容/球衣变化",
+      "source_type": "websearch",
+      "sources": [
+        {
+          "title": "可靠来源标题",
+          "url": "https://example.com/source",
+          "claim": "被核验的事实",
+          "status": "verified"
+        }
+      ],
+      "row_count": 0,
       "truncated": false
     }
   ],
@@ -105,7 +124,10 @@ Use this when the task cannot be completed with available data.
 - `materials[].id` and `materials[].news_id` are both required for playable clips.
 - `materials[].pbp` is optional, but include it when `event` maps to `kb_pbp.action_number`.
 - `queries[].query_hash` should come from the SQL proxy response when available.
+- `queries[]` must include a `source_type: "websearch"` entry when WebSearch was required for trades, signings, injuries, jersey changes, roster moves, or non-database facts.
+- WebSearch entries should include source title, URL, verified claim, and status, but not long copied excerpts.
 - `warnings` should include broad fallback matches, missing PBP mappings, weak evidence, or duration coverage below 115%.
+- `warnings` should include conflicting or unverified WebSearch findings and same-surname ambiguity that required fallback material.
 - Successful outputs should target `duration_coverage_ratio >= 1.15` for every segment and total coverage. Absolute minimum is `1.0`; below `1.0` is not acceptable for `success=true`.
 
 ## Script Guidelines

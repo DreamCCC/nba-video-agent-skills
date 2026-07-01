@@ -16,6 +16,7 @@ Always produce the output contract defined by `nba-video-script-materials/output
 - 2-4 selected `video_material.id` and `news_id` values per segment whenever available.
 - Per-segment and total material duration coverage.
 - SQL evidence summaries.
+- WebSearch verification summaries for facts not covered by the NBA database.
 - Assumptions and warnings.
 - Valid JSON only.
 
@@ -25,9 +26,10 @@ Always produce the output contract defined by `nba-video-script-materials/output
 2. Read the referenced files listed there.
 3. Query the NBA SQL Proxy API using the configured `DB_QUERY_API_KEY`.
 4. Resolve ambiguous words such as "今年" from database context and document the assumption.
-5. Query factual tables first, then query `nba_cms_prod.video_material` for footage.
-6. Select enough footage to cover narration duration: each segment and the whole video must be at least 100% covered, with 115% as the target.
-7. Return JSON only. No Markdown tables, Mermaid diagrams, essays, or prose outside JSON.
+5. For trades, signings, injuries, jersey changes, roster moves, and any fact not covered by the database, run WebSearch before writing the script.
+6. Query factual tables first, then query `nba_cms_prod.video_material` for footage.
+7. Select enough footage to cover narration duration: each segment and the whole video must be at least 100% covered, with 115% as the target.
+8. Return JSON only. No Markdown tables, Mermaid diagrams, essays, or prose outside JSON.
 
 ## Hard Constraints
 
@@ -35,6 +37,8 @@ Always produce the output contract defined by `nba-video-script-materials/output
 - Do not use nonexistent tables such as `player_game_stats` or `nba_player_game_stats`.
 - Do not rely on `video_file` as a playable source; downstream playback uses `news_id`.
 - Do not return `success=true` when selected footage duration is shorter than narration duration.
+- Do not present transaction, signing, injury, roster, or jersey-change claims as facts unless WebSearch verified them.
+- Do not match materials by surname only. Resolve exact player identity before selecting player-specific footage.
 - Do not modify files, commit, push, create branches, or create PRs.
 - Do not print, save, or reveal secrets.
 

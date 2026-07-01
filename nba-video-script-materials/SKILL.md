@@ -18,6 +18,7 @@ The final answer must include:
 - A complete Chinese commentary script split into segments.
 - Matching `video_material.id` and `news_id` for each segment.
 - Evidence SQL/data used to support the script.
+- WebSearch verification for time-sensitive or non-database facts.
 - Material selection rationale.
 - A duration coverage plan: selected clip duration must cover the requested/estimated narration duration.
 
@@ -28,6 +29,7 @@ Read these files before doing the task:
 - `db-query-api.md` for the SQL proxy API and authentication.
 - `database-schema.md` for table names and column guidance.
 - `sql-recipes.md` for safe query patterns and examples.
+- `fact-checking.md` for WebSearch requirements and player disambiguation.
 - `output-contract.md` for the final JSON shape.
 - `quality-checklist.md` before returning the final answer.
 - `examples.md` when a concrete end-to-end example is useful.
@@ -40,24 +42,32 @@ Read these files before doing the task:
    - If the user only asks a raw question such as `论证马刺为什么会错失今年的总冠军`, convert it into a 90-180 second vertical-video planning request.
    - Resolve ambiguous terms such as `今年` from database context and document the assumption.
 
-2. Query factual NBA data.
+2. Verify non-database and time-sensitive facts.
+   - Read `fact-checking.md`.
+   - If the topic involves trades, signings, injuries, jersey changes, roster moves, draft/free-agency news, or transaction details, run WebSearch before writing the script.
+   - If a claim is not covered by `nba_game_prod` or `nba_cms_prod`, run WebSearch before using it.
+   - Disambiguate players by full name and, when possible, `PLAYER_ID`; never rely on surname-only matches such as `Bridges`, `Ball`, `Green`, `Williams`, `Johnson`, `Brown`, `Smith`, or `Murray`.
+   - If WebSearch finds conflicting or unverified claims, do not present them as facts. Put them in `warnings` or return `success=false` if they are central to the requested topic.
+
+3. Query factual NBA data.
    - Use the SQL proxy API only.
    - Use only `SELECT` or `WITH`.
    - Prefer schema-qualified tables such as `nba_game_prod.kb_tbs`, `nba_game_prod.kb_pbs`, `nba_game_prod.kb_pbp`, and `nba_cms_prod.video_material`.
    - Never invent tables. If unsure, query `information_schema.COLUMNS` or `information_schema.TABLES`.
 
-3. Build the narrative.
+4. Build the narrative.
    - Create 4-7 segments for a 90-180 second video.
    - Each segment must have a clear point supported by real data or real footage.
    - Avoid unsupported claims. Put uncertainty in `assumptions`.
 
-4. Query video materials.
+5. Query video materials.
    - Use `nba_cms_prod.video_material`.
    - Prefer `type = 1`, `duration <= 90`, non-empty `news_id`, and non-empty `video_file`.
    - Join `nba_cms_prod.item_info` on `item_info.id = video_material.news_id` to get `star`.
    - For playable downstream usage, return `news_id`; do not depend on `video_file` direct URLs.
+   - For transaction/roster topics, use the WebSearch-resolved exact player identity before material lookup. Prefer exact player ID filters over surname/title keyword filters.
 
-5. Allocate clips.
+6. Allocate clips.
    - Every segment should have at least 2-4 relevant materials by default. Use 1 clip only when that clip alone covers the segment duration and is clearly exact.
    - For each segment, sum selected `materials[].duration_s` and make it at least `segments[].estimated_duration_s * 1.15`.
    - For the whole video, sum all selected material durations and make it at least `target_duration_s * 1.15`.
@@ -65,9 +75,10 @@ Read these files before doing the task:
    - Prefer clips with exact player/team/action matches, higher `star`, shorter duration, and matching `game_id`.
    - If there are not enough exact materials, use broader context clips and explain the fallback.
 
-6. Return only the structured result.
+7. Return only the structured result.
    - Use the JSON contract in `output-contract.md`.
    - Include SQL summaries and query hashes if available.
+   - Include WebSearch verification summaries in `queries` when WebSearch was required.
    - Do not include secrets or Bearer tokens.
    - Do not include Markdown tables, Mermaid diagrams, essay prose, or explanations outside the JSON object.
 
@@ -80,4 +91,6 @@ Read these files before doing the task:
 - Do not return an empty script. If data is insufficient, return `success=false` with `blocking_reason`.
 - Do not skip material matching. Every successful segment must include `material_ids` and `news_ids`; weak matches belong in `warnings`.
 - Do not return `success=true` if selected material duration covers less than 100% of the target narration duration. Add fallback materials first.
+- Do not use transaction, signing, injury, roster, or jersey-change claims before WebSearch verification.
+- Do not choose footage for an ambiguous same-surname player. Resolve the exact player first, or use non-player-specific fallback footage with a warning.
 

@@ -5,10 +5,20 @@ Run this checklist before returning the final JSON.
 ## Data Correctness
 
 - Every stat, score, ranking, game date, player name, and team name comes from SQL result rows.
+- Every trade, signing, injury, jersey-change, roster-move, draft/free-agency, or other non-database claim was verified with WebSearch before scripting.
+- Conflicting or unverified WebSearch findings are not stated as facts.
 - No IDs are invented.
 - `GAME_ID`/`game_id` values are copied exactly from database rows.
 - Season and spring date logic is correct.
 - No nonexistent tables were used.
+
+## Entity Disambiguation
+
+- Player references from transaction/news topics are resolved to full names, not surname-only labels.
+- Ambiguous surnames such as `Bridges`, `Ball`, `Green`, `Williams`, `Johnson`, `Brown`, `Smith`, and `Murray` are disambiguated before material lookup.
+- Player-specific material lookup uses exact player IDs when possible.
+- Same-surname footage is never used as a fallback for the intended player.
+- Old-team footage for a traded/signed player is labeled as old-team/context footage in `selection_reason`.
 
 ## Material Correctness
 
@@ -51,5 +61,7 @@ Run this checklist before returning the final JSON.
 - `success` is true only if the script and material allocation are complete.
 - `success` is true only if duration coverage is complete.
 - Include `queries` with table names and proxy `query_hash` values when available.
+- Include WebSearch verification summaries in `queries` when WebSearch was required.
+- Include warnings for unverified, conflicting, or downgraded claims.
 - Do not include Bearer tokens, environment variable values, raw secrets, or full authentication headers.
 

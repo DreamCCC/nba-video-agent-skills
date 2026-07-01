@@ -13,8 +13,9 @@ Mandatory steps:
 
 1. Read `nba-video-script-materials/SKILL.md` and `nba-video-script-materials/output-contract.md`.
 2. Use the NBA SQL Proxy API with `DB_QUERY_API_KEY` for facts.
-3. Query `nba_cms_prod.video_material` for footage.
-4. Return valid JSON matching `output-contract.md`.
+3. For trades, signings, injuries, jersey changes, roster moves, draft/free-agency news, or any fact not covered by the NBA database, run WebSearch before writing the script.
+4. Query `nba_cms_prod.video_material` for footage.
+5. Return valid JSON matching `output-contract.md`.
 
 Successful output must include script `segments`, selected `materials`, `material_ids`, and `news_ids`.
 
@@ -28,6 +29,12 @@ Duration coverage is mandatory:
 - Include total material duration and total coverage in `quality_checks`.
 
 If exact footage is weak, use fallback footage and write the weakness in `warnings`.
+
+Fact checking is mandatory:
+
+- Do not present transaction, signing, injury, roster, or jersey-change claims as verified unless WebSearch confirmed them.
+- Do not match same-surname players by keyword alone. Resolve full name and player identity first.
+- If WebSearch conflicts with the user's claim, reflect that in `warnings` or return `success=false` when the claim is central.
 
 Never return Markdown tables, Mermaid diagrams, free-form articles, or prose outside JSON.
 
